@@ -1,15 +1,17 @@
-const socket = io();
-const params = new URLSearchParams( window.location.search);
 
-if ( !params.has('nombre') ||  !params.has('sala')){
+
+const socket = io();
+const param = new URLSearchParams( window.location.search);
+
+if ( !param.has('nombre') ||  !param.has('sala')){
     window.location ='index.html';
     throw new Error( 'El nombre y sala son necesario');
 }
 
 
 const usuario = {
-    nombre:params.get('nombre'),
-    sala:params.get('sala')
+    nombre:param.get('nombre'),
+    sala:param.get('sala')
 
 }
 
@@ -17,8 +19,8 @@ socket.on('connect', function() {
     console.log('Conectado al servidor');
 
     socket.emit('entrar-chat', usuario,  ( resp ) => {
-        
-        console.log( resp );
+
+        renderizarUsuarios(resp);
 
     });
 
@@ -45,15 +47,18 @@ socket.emit('crear-mensaje', {
 // Escuchar información
 socket.on('crear-mensaje', function(mensaje) {
 
-    console.log('Servidor:', mensaje);
+    renderizarMensajes(mensaje, false);
+    //console.log('Servidor:', mensaje);
+    scrollBottom();
 
 });
 
 //Escuchar cambios de usuarios
 //cuando un usuario entra o sale del chat
-socket.on('lista-persona', ( mensaje ) => {
+socket.on('lista-persona', ( personas ) => {
 
-    console.log('Servidor:', mensaje);
+    //console.log('Servidor:', mensaje);
+    renderizarUsuarios(personas);
 
 });
 

@@ -20,6 +20,7 @@ io.on('connection', (client) => {
         usuarios.agregarPersona( client.id, data.nombre, data.sala);
 
         client.broadcast.to( data.sala ).emit('lista-persona', usuarios.getPersonasPorSala( data.sala));
+        client.broadcast.to( data.sala ).emit('crear-mensaje', crearMensaje( 'Administrador', `${ data.nombre } se unió al chat`));
 
         callback ( usuarios.getPersonasPorSala(data.sala));
     });
@@ -28,18 +29,22 @@ io.on('connection', (client) => {
 
         const personaBorrada = usuarios.borrarPersona( client.id);
         
-        client.broadcast.to( personaBorrada.sala ).emit('crear-mensaje', crearMensaje( 'Administrador', `${ personaBorrada.nombre } abandono el chat`));
-        client.broadcast.to( personaBorrada.sala ).emit('lista-persona', usuarios.getPersonasPorSala( personaBorrada.sala ));
+        if( personaBorrada )
+        {
+            client.broadcast.to( personaBorrada.sala ).emit('crear-mensaje', crearMensaje( 'Administrador', `${ personaBorrada.nombre } abandono el chat`));
+            client.broadcast.to( personaBorrada.sala ).emit('lista-persona', usuarios.getPersonasPorSala( personaBorrada.sala ));
+        }
 
     });
 
-    client.on('crear-mensaje', ( data ) =>{
+    client.on('crear-mensaje', ( data, callback ) =>{
 
         const persona = usuarios.getPersona(client.id);
 
         const mensaje = crearMensaje( persona.nombre, data.mensaje );
         client.broadcast.to( persona.sala ).emit( 'crear-mensaje', mensaje);
 
+        callback( mensaje);
     });
 
     //Mensajes privados
